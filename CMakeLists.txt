@@ -243,6 +243,7 @@ endif()
 
 # wrap up common object files so not built multiple times for each target
 add_library(common OBJECT ${SOURCES})
+include(Shell/Torok/cmake.cmake)
 
 # the actual Vampire executable
 add_executable(vampire vampire.cpp $<TARGET_OBJECTS:common>)

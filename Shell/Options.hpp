@@ -1494,6 +1494,7 @@ public:
   unsigned sineDepth() const { return _sineDepth.actualValue; }
   unsigned sineGeneralityThreshold() const { return _sineGeneralityThreshold.actualValue; }
   unsigned sineToAgeGeneralityThreshold() const { return _sineToAgeGeneralityThreshold.actualValue; }
+  const std::string& torok() const { return _torok.actualValue; }
   SineSelection sineSelection() const { return _sineSelection.actualValue; }
   void setSineSelection(SineSelection val) { _sineSelection.actualValue=val; }
   float sineTolerance() const { return _sineTolerance.actualValue; }
@@ -1897,6 +1898,7 @@ private:
   UnsignedOptionValue _sineDepth;
   UnsignedOptionValue _sineGeneralityThreshold;
   UnsignedOptionValue _sineToAgeGeneralityThreshold;
+  StringOptionValue _torok;
   ChoiceOptionValue<SineSelection> _sineSelection;
   FloatOptionValue _sineTolerance;
   FloatOptionValue _sineToAgeTolerance;

@@ -108,6 +108,7 @@
 #include "Shell/AnswerLiteralManager.hpp"
 #include "Shell/PartialRedundancyHandler.hpp"
 #include "Shell/Options.hpp"
+#include "Shell/Torok/Passive.hpp"
 #include "Shell/Statistics.hpp"
 #include "Debug/TimeProfiling.hpp"
 #include "Shell/Shuffling.hpp"
@@ -254,7 +255,10 @@ SaturationAlgorithm::SaturationAlgorithm(Problem& prb, const Options& opt)
 
   _unprocessed = new UnprocessedClauseContainer();
 
-  if (opt.useManualClauseSelection()) {
+  if (!opt.torok().empty()) {
+    _passive = std::make_unique<Torok::Passive>(opt);
+  }
+  else if (opt.useManualClauseSelection()) {
     _passive = std::make_unique<ManCSPassiveClauseContainer>(true, opt);
   }
   else {

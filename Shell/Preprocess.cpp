@@ -52,6 +52,7 @@
 #include "Skolem.hpp"
 #include "SimplifyFalseTrue.hpp"
 #include "SineUtils.hpp"
+#include "Torok/Guidance.hpp"
 #include "Statistics.hpp"
 #include "FOOLElimination.hpp"
 #include "TheoryAxioms.hpp"
@@ -78,6 +79,15 @@ using namespace Shell;
  */
 void Preprocess::preprocess(Problem& prb)
 {
+  if (!_options.torok().empty()) {
+    if (_options.sineSelection() != Options::SineSelection::OFF)
+      USER_ERROR("Choose either --torok or --sine_selection, not both");
+    if (_options.saturationAlgorithm() == Options::SaturationAlgorithm::FINITE_MODEL_BUILDING ||
+        _options.saturationAlgorithm() == Options::SaturationAlgorithm::Z3)
+      USER_ERROR("Torok requires a saturation algorithm: otter, discount or lrs");
+    if (!_clausify)
+      USER_ERROR("Torok requires clausification; use proving or clausify mode");
+  }
   env.options->resolveAwayAutoValues0();
 
   if (env.options->showPreprocessing()) {
@@ -371,6 +381,8 @@ void Preprocess::preprocess(Problem& prb)
   }
 
   prb.getProperty();
+
+  if (!_options.torok().empty()) Torok::prepare(prb, _options);
 
   if (prb.hasFOOL()) {
     // This is the point to extend the signature with $$true and $$false

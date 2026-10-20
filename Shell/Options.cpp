@@ -1603,6 +1603,9 @@ Options::Options ()
       {.short_name = "s2agt",
        .description = "Like sine_generality_threshold but influences sine_to_age, sine_to_pred_levels, and sine_level_split_queue rather than sine_selection.",
        .tag = OptionTag::SATURATION})
+  , _torok("torok",this,"",
+      {.description = "Path to an exported Torok model. Enables weighted clause guidance without premise filtering; incompatible with sine_selection. Empty disables Torok.",
+       .tag = OptionTag::PREPROCESSING})
   , _sineSelection("sine_selection",this,SineSelection::OFF,{"axioms","included","off"},
       {.short_name = "ss",
        .description = "If 'axioms', all formulas that are not annotated as 'axiom' (i.e. conjectures and hypotheses) are initially selected, and the SInE selection is performed on those annotated as 'axiom'. If 'included', all formulas that are directly in the problem file are initially selected, and the SInE selection is performed on formulas from included files. The 'included' value corresponds to the behaviour of the original SInE implementation.",
