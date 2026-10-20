@@ -81,7 +81,7 @@ void Preprocess::preprocess(Problem& prb)
 {
   if (!_options.torok().empty()) {
     if (_options.sineSelection() != Options::SineSelection::OFF)
-      USER_ERROR("Choose either --torok or --sine_selection, not both");
+      USER_ERROR("Choose either --torok_file or --sine_selection, not both");
     if (_options.saturationAlgorithm() == Options::SaturationAlgorithm::FINITE_MODEL_BUILDING ||
         _options.saturationAlgorithm() == Options::SaturationAlgorithm::Z3)
       USER_ERROR("Torok requires a saturation algorithm: otter, discount or lrs");

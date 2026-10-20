@@ -63,7 +63,7 @@ int check(int argc, char** argv) {
   auto graph = Shell::Torok::buildGraph(clauses);
   auto scores = Shell::Torok::predict(graph, argv[1]);
 
-  Lib::env.options->set("torok", argv[1]);
+  Lib::env.options->set("torok_file", argv[1]);
   Shell::Torok::prepare(problem, *Lib::env.options);
 
   if (clauses.size() >= 2) {

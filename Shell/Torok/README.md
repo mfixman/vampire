@@ -5,7 +5,7 @@ its learned weights. This matches Connections' SATResetCoP **Weighted** mode
 (temperature 1, probability floor `1e-6`), adapted to Vampire's given-clause loop.
 It does not apply a top-k cutoff or rescore derived clauses with the network.
 
-There is one new prover option: `--torok MODEL`. An empty path (the default)
+There is one new prover option: `--torok_file MODEL`. An empty path (the default)
 disables it. The existing `--sine_selection` option is unchanged. Enabling both
 is an error, so a comparison cannot silently apply both methods.
 
@@ -31,7 +31,7 @@ loading interface; exporting/loading has been tested with the installed PyTorch
 Python 3.14. Python is not needed at proof-search runtime.
 
 Every build includes Torok and requires LibTorch. The model is loaded lazily
-when `--torok MODEL` is used and reused within a process.
+when `--torok_file MODEL` is used and reused within a process.
 
 ## Compare
 
@@ -40,7 +40,7 @@ command. Use a nonzero seed: Vampire treats seed zero as nondeterministic.
 
 ```bash
 build/vampire --mode vampire --saturation_algorithm otter --random_seed 1 \
-  --time_limit 30s --torok torok.ts problem.p
+  --time_limit 30s --torok_file torok.ts problem.p
 build/vampire --mode vampire --saturation_algorithm otter --random_seed 1 \
   --time_limit 30s --sine_selection axioms problem.p
 build/vampire --mode vampire --saturation_algorithm otter --random_seed 1 \
@@ -89,7 +89,7 @@ No clauses are discarded by Torok, and proof ancestry is unchanged.
 ## Verify
 
 ```bash
-cmake --build build --target torok_check --parallel "$(nproc)" -j 8
+cmake --build build --target torok_check --parallel "$(nproc)"
 python Shell/Torok/verify.py --connections ../connections \
   --checkpoint torok.pt --exported torok.ts --checker build/torok_check
 ```
@@ -97,3 +97,16 @@ python Shell/Torok/verify.py --connections ../connections \
 This checks native graph tables and probabilities against Python on shared CNF,
 including empty node groups, variable sharing and occurs-check complements. The
 native checker also exercises inherited weights and weighted queue sampling.
+
+## Compatible models
+
+`--torok_file` accepts a CPU-compatible TorchScript module with
+`forward(nodes, edges, axioms, conjectures)`. The two lists contain int64 graph
+feature/edge tables in the order defined in `Model.cpp`; the final two int64
+vectors index the axiom and conjecture clauses. The model must preserve these
+feature meanings and return a finite float32 vector with one logit per axiom,
+in the supplied axiom order. Vampire applies sigmoid itself.
+
+Hidden dimensions, layer counts and architecture may differ. Matching tensor
+sizes alone is insufficient if the graph encoding or output meanings differ.
+Connections' new `.ts` checkpoints implement this interface directly.
