@@ -19,10 +19,10 @@ is sufficient; a CUDA-enabled installation may also require its CUDA build tools
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_PREFIX_PATH="$(python -c 'import torch; print(torch.utils.cmake_prefix_path)')"
 cmake --build build --target vampire --parallel "$(nproc)"
-python Shell/Torok/export.py torok.pt torok.ts --connections ../connections
+python Shell/Torok/export.py torok.pt Shell/Torok/torok.ts --connections ../connections
 ```
 
-`torok.pt` is the canonical Connections training checkpoint. `torok.ts` is its
+`torok.pt` is the canonical Connections training checkpoint. `Shell/Torok/torok.ts` is its
 exported inference artifact; pass **the exported artifact** to Vampire. The
 exporter copies trained layers into a tensor-only module and supports the Full
 ReLU architecture. It uses TorchScript, a deprecated but available LibTorch
@@ -40,7 +40,7 @@ command. Use a nonzero seed: Vampire treats seed zero as nondeterministic.
 
 ```bash
 build/vampire --mode vampire --saturation_algorithm otter --random_seed 1 \
-  --time_limit 30s --torok_file torok.ts problem.p
+  --time_limit 30s --torok_file Shell/Torok/torok.ts problem.p
 build/vampire --mode vampire --saturation_algorithm otter --random_seed 1 \
   --time_limit 30s --sine_selection axioms problem.p
 build/vampire --mode vampire --saturation_algorithm otter --random_seed 1 \
@@ -91,7 +91,7 @@ No clauses are discarded by Torok, and proof ancestry is unchanged.
 ```bash
 cmake --build build --target torok_check --parallel "$(nproc)"
 python Shell/Torok/verify.py --connections ../connections \
-  --checkpoint torok.pt --exported torok.ts --checker build/torok_check
+  --checkpoint torok.pt --exported Shell/Torok/torok.ts --checker build/torok_check
 ```
 
 This checks native graph tables and probabilities against Python on shared CNF,
