@@ -44,3 +44,6 @@ cmake-build
 **/.*.swo
 .ccls-cache
 .cache/
+__pycache__/
+/results/
+/torok.pt

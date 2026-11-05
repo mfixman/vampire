@@ -21,6 +21,7 @@
 #include "Shell/Statistics.hpp"
 #include "Shell/Options.hpp"
 #include "Shell/UIHelper.hpp"
+#include "Shell/Torok/SearchClock.hpp"
 
 #include "LRS.hpp"
 
@@ -89,6 +90,7 @@ bool LRS::bindingResourceIsInstructions()
   // both active: whichever is a larger fraction of the way to its limit
   long instrsBurned = Timer::elapsedMegaInstructions() - _lrsStartInstrs;
   long timeSpent = Timer::elapsedMilliseconds() - _lrsStartTime; // (in milliseconds)
+  timeSpent = Shell::Torok::activeSearchMilliseconds(timeSpent);
   return instrsBurned * static_cast<long long>(timeLimitDeci) * 100 >
          timeSpent * static_cast<long long>(instrLimit);
 }
@@ -119,6 +121,7 @@ bool LRS::withinMaintenanceBudget()
     return _maintenanceInstrs <= MAINTENANCE_BUDGET * spent;
   }
   long spent = Timer::elapsedMilliseconds() - _lrsStartTime; // (in milliseconds)
+  spent = Shell::Torok::activeSearchMilliseconds(spent);
   return _maintenanceMicros <= MAINTENANCE_BUDGET * spent * 1000.0;
 }
 
@@ -233,6 +236,7 @@ long long LRS::estimatedReachableCount()
   long currTime = Timer::elapsedMilliseconds();
   // time spent in saturation (parsing, preprocessing, and the initial loading up of the input into passive are excluded)
   long timeSpent=currTime-_lrsStartTime; // (in milliseconds)
+  timeSpent = Shell::Torok::activeSearchMilliseconds(timeSpent);
 
   int opt_timeLimitDeci = _opt.timeLimitInDeciseconds();
   float correction_coef = _opt.lrsEstimateCorrectionCoef();

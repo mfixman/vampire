@@ -1,6 +1,9 @@
 target_sources(common PRIVATE
   Shell/Torok/Graph.cpp
   Shell/Torok/Guidance.cpp
+  Shell/Torok/Support.cpp
+  Shell/Torok/Soft.cpp
+  Shell/Torok/SearchClock.cpp
   Shell/Torok/Passive.cpp)
 add_library(torok_model STATIC Shell/Torok/Model.cpp)
 find_package(Torch REQUIRED)

@@ -1604,7 +1604,7 @@ Options::Options ()
        .description = "Like sine_generality_threshold but influences sine_to_age, sine_to_pred_levels, and sine_level_split_queue rather than sine_selection.",
        .tag = OptionTag::SATURATION})
   , _torok("torok_file",this,"",
-      {.description = "Path to an exported Torok model. Enables weighted clause guidance without premise filtering; incompatible with sine_selection. Empty disables Torok.",
+      {.description = "Path to an exported Torok model. Enables weighted clause guidance by default; can follow sine_selection. Empty disables Torok. Experimental support/filter settings are documented in Shell/Torok/experiments.",
        .tag = OptionTag::PREPROCESSING})
   , _sineSelection("sine_selection",this,SineSelection::OFF,{"axioms","included","off"},
       {.short_name = "ss",

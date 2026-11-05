@@ -1,4 +1,6 @@
 #include "Guidance.hpp"
+#include "Support.hpp"
+#include "Soft.hpp"
 #include "Graph.hpp"
 #include "Kernel/Clause.hpp"
 #include "Shell/Property.hpp"
@@ -8,6 +10,9 @@
 #include <cmath>
 #include <cstdio>
 #include <initializer_list>
+#include <algorithm>
+#include <cstdlib>
+#include <random>
 #include <unordered_map>
 
 namespace {
@@ -16,6 +21,10 @@ namespace {
 }
 
 void Shell::Torok::prepare(Kernel::Problem& problem, const Options& options) {
+  if (supportEnabled() && !filterEnabled() && options.sos() != Options::Sos::ALL && options.sos() != Options::Sos::ON) {
+    USER_ERROR("TOROK_SUPPORT requires --sos all or --sos on");
+  }
+
   problem.getProperty();
 
   const auto unsupported = {
@@ -41,6 +50,18 @@ void Shell::Torok::prepare(Kernel::Problem& problem, const Options& options) {
     clauses.push_back(static_cast<Kernel::Clause*>(units.next()));
   }
 
+  if (const char* limit = std::getenv("TOROK_MAX_CLAUSES")) {
+    char* end;
+    unsigned long maximum = std::strtoul(limit, &end, 10);
+    if (*end || !maximum || *limit == '-') {
+      USER_ERROR("TOROK_MAX_CLAUSES must be a positive integer");
+    }
+
+    if (clauses.size() > maximum) {
+      USER_ERROR("Torok clause budget exceeded; use the baseline fallback");
+    }
+  }
+
   auto graph = buildGraph(clauses);
   std::vector<float> scores;
 
@@ -51,6 +72,12 @@ void Shell::Torok::prepare(Kernel::Problem& problem, const Options& options) {
   }
 
   logWeights.clear();
+  prepareSupport(clauses, graph.axioms, scores);
+  if (softEnabled() && std::getenv("TOROK_RANDOM_SUPPORT")) {
+    std::mt19937 random(1);
+    std::shuffle(scores.begin(), scores.end(), random);
+  }
+
   neutralLogWeight = 0;
 
   for (size_t i = 0; i < scores.size(); i += 1) {
@@ -68,11 +95,13 @@ void Shell::Torok::prepare(Kernel::Problem& problem, const Options& options) {
     neutralLogWeight /= clauses.size();
   }
 
+  filterProblem(problem);
+
   auto elapsed = std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count();
 
   if (options.showPreprocessing()) {
     std::printf(
-      "%% Torok: scored %zu axioms, retained all %zu clauses; graph and inference %g s\n",
+      "%% Torok: scored %zu axioms from %zu clauses; graph and inference %g s\n",
       scores.size(),
       clauses.size(),
       elapsed
@@ -80,8 +109,8 @@ void Shell::Torok::prepare(Kernel::Problem& problem, const Options& options) {
   }
 }
 
-double Shell::Torok::weight(Kernel::Unit* unit) {
-  std::vector<std::pair<Kernel::Unit*, bool>> pending{{unit, false}};
+double Shell::Torok::weight(const Kernel::Unit* unit) {
+  std::vector<std::pair<const Kernel::Unit*, bool>> pending{{unit, false}};
 
   while (!pending.empty()) {
     auto [current, visited] = pending.back();
@@ -106,10 +135,13 @@ double Shell::Torok::weight(Kernel::Unit* unit) {
       }
     } else {
       double sum = 0;
+      double maximum = -INFINITY;
       size_t count = 0;
 
       while (inference.hasNext(parents)) {
-        sum += logWeights.at(inference.next(parents)->number());
+        double value = logWeights.at(inference.next(parents)->number());
+        sum += value;
+        maximum = std::max(maximum, value);
         count += 1;
       }
 
@@ -117,6 +149,9 @@ double Shell::Torok::weight(Kernel::Unit* unit) {
 
       if (count) {
         value = sum / count;
+        if (softEnabled()) {
+          value = maximum;
+        }
       }
 
       logWeights[current->number()] = value;

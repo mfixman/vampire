@@ -109,6 +109,9 @@
 #include "Shell/PartialRedundancyHandler.hpp"
 #include "Shell/Options.hpp"
 #include "Shell/Torok/Passive.hpp"
+#include "Shell/Torok/Support.hpp"
+#include "Shell/Torok/Soft.hpp"
+#include "Shell/Torok/SearchClock.hpp"
 #include "Shell/Statistics.hpp"
 #include "Debug/TimeProfiling.hpp"
 #include "Shell/Shuffling.hpp"
@@ -255,7 +258,7 @@ SaturationAlgorithm::SaturationAlgorithm(Problem& prb, const Options& opt)
 
   _unprocessed = new UnprocessedClauseContainer();
 
-  if (!opt.torok().empty()) {
+  if (!opt.torok().empty() && !Torok::supportEnabled() && !Torok::softEnabled()) {
     _passive = std::make_unique<Torok::Passive>(opt);
   }
   else if (opt.useManualClauseSelection()) {
@@ -606,6 +609,9 @@ void SaturationAlgorithm::addInputClause(Clause* cl)
 
   bool sosForAxioms = _opt.sos() == Options::Sos::ON || _opt.sos() == Options::Sos::ALL;
   sosForAxioms = sosForAxioms && cl->inputType() == UnitInputType::AXIOM;
+  if (!_opt.torok().empty() && Torok::supportEnabled() && Torok::inSupport(cl)) {
+    sosForAxioms = false;
+  }
 
   bool sosForTheory = _opt.sos() == Options::Sos::THEORY && _opt.sosTheoryLimit() == 0;
 
@@ -1292,6 +1298,7 @@ void SaturationAlgorithm::doOneAlgorithmStep()
    */
   if (env.statistics->activations == 0) {
     _lrsStartTime = Timer::elapsedMilliseconds();
+    Torok::startSearchClock();
     _lrsStartInstrs = Timer::elapsedMegaInstructions();
   }
 

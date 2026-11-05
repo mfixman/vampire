@@ -7,7 +7,8 @@ It does not apply a top-k cutoff or rescore derived clauses with the network.
 
 There is one new prover option: `--torok_file MODEL`. An empty path (the default)
 disables it. The existing `--sine_selection` option is unchanged. Enabling both
-is an error, so a comparison cannot silently apply both methods.
+scores the clauses remaining after SInE. Experimental support and filtering modes
+and their equal-budget comparisons are described in `experiments/README.md`.
 
 ## Build and export
 
@@ -18,7 +19,7 @@ is sufficient; a CUDA-enabled installation may also require its CUDA build tools
 ```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_PREFIX_PATH="$(python -c 'import torch; print(torch.utils.cmake_prefix_path)')"
-cmake --build build --target vampire --parallel "$(nproc)"
+cmake --build build --target vampire --parallel 18
 python Shell/Torok/export.py torok.pt Shell/Torok/torok.ts --connections ../connections
 ```
 

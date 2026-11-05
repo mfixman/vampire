@@ -28,6 +28,7 @@
 
 #include "Shell/PartialRedundancyHandler.hpp"
 #include "Shell/Options.hpp"
+#include "Shell/Torok/Soft.hpp"
 
 #include "Inference.hpp"
 #include "Term.hpp"
@@ -578,7 +579,12 @@ unsigned Clause::computeWeightForClauseSelection(const Options& opt) const
     numeralWeight = getNumeralWeight();
   }
 
-  return Clause::computeWeightForClauseSelection(w, splWeight, numeralWeight, Unit::derivedFromGoal(), opt);
+  unsigned result = Clause::computeWeightForClauseSelection(w, splWeight, numeralWeight, Unit::derivedFromGoal(), opt);
+  if (!opt.torok().empty() && Shell::Torok::softEnabled()) {
+    return Shell::Torok::softWeight(this, result);
+  }
+
+  return result;
 }
 
 /*

@@ -6,7 +6,7 @@
 
 namespace Shell::Torok {
   void prepare(Kernel::Problem& problem, const Options& options);
-  double weight(Kernel::Unit* unit);
+  double weight(const Kernel::Unit* unit);
 }
 
 #endif
