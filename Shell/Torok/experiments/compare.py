@@ -180,6 +180,7 @@ def main():
     parser.add_argument('--tptp', type = Path, default = Path.home() / 'TP/TPTP')
     parser.add_argument('--output', type = Path, required = True)
     parser.add_argument('--manifest', type = Path)
+    parser.add_argument('--model', type = Path, default = ROOT / 'Shell/Torok/torok.ts')
     parser.add_argument('--split', type = int, default = 100)
     parser.add_argument('--part', type = int, nargs = '+', default = [0])
     parser.add_argument('--workers', type = int, default = 18)
@@ -197,7 +198,7 @@ def main():
     paths = problems(args)
     manifest = dict(problems = list(map(str, paths)), settings = {
         k: str(v) if isinstance(v, Path) else v for k, v in vars(args).items()},
-        binary = digest(ROOT / 'build/vampire'), model = digest(ROOT / 'Shell/Torok/torok.ts'),
+        binary = digest(ROOT / 'build/vampire'), model = digest(args.model),
         revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd = ROOT, text = True).strip())
     target = args.output / 'manifest.json'
     if target.exists():
@@ -208,7 +209,7 @@ def main():
     else:
         target.write_text(json.dumps(manifest, indent = 2) + '\n')
         shutil.copy2(ROOT / 'build/vampire', args.output / 'vampire')
-        shutil.copy2(ROOT / 'Shell/Torok/torok.ts', args.output / 'torok.ts')
+        shutil.copy2(args.model, args.output / 'torok.ts')
         shutil.copy2(__file__, args.output / 'compare.py')
         patch = subprocess.check_output(['git', 'diff'], cwd = ROOT)
         (args.output / 'source.patch').write_bytes(patch)
