@@ -121,7 +121,7 @@ def prepare(args, problems):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', type = Path, required = True)
-    parser.add_argument('--prover9', type = Path, default = Path.home() / 'TP/Prover9')
+    parser.add_argument('--prover9', type = Path, default = Path(__file__).resolve().parents[4] / 'Prover9')
     parser.add_argument('--tptp', type = Path, default = Path.home() / 'TP/TPTP')
     parser.add_argument('--workers', type = int, default = 18)
     args = parser.parse_args()
