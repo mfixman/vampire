@@ -190,7 +190,7 @@ def main():
     parser.add_argument('--probe', type = float, default = 1)
     parser.add_argument('--fraction', type = float, default = 1 / 3)
     parser.add_argument('--max-clauses', type = int, default = 0)
-    parser.add_argument('--memory-mb', type = int, default = 2048)
+    parser.add_argument('--memory-mb', type = int, default = 3072)
     parser.add_argument('--algorithm', default = 'otter')
     parser.add_argument('--modes', nargs = '+', default = ['baseline', 'sine', 'resume-support1'])
     parser.add_argument('--extra', nargs = '*', default = [])
