@@ -65,5 +65,11 @@ std::vector<float> Shell::Torok::predict(const Graph& graph, const std::string& 
     return {data, data + probabilities.numel()};
   } catch (const c10::Error& error) {
     throw std::runtime_error(std::string("Torok inference failed: ") + error.what_without_backtrace());
+  } catch (const std::exception& error) {
+    // TorchScript interpreter errors end with the original error after a traceback.
+    std::string text = error.what();
+    auto end = text.find_last_not_of('\n');
+    auto start = text.rfind('\n', end);
+    throw std::runtime_error("Torok inference failed: " + text.substr(start + 1, end - start));
   }
 }

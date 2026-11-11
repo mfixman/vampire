@@ -52,7 +52,7 @@ def launch(problem, mode, args, cpu, log, limit = None, pause_clock = False):
     limit = args.seconds if limit is None else max(0.1, limit)
     command = ['taskset', '-c', str(cpu), str(args.output / 'vampire'),
                '--mode', 'vampire', '--time_limit', f'{limit:.1f}s',
-               '--memory_limit', '2048', '--random_seed', str(args.seed),
+               '--memory_limit', str(args.memory_mb), '--random_seed', str(args.seed),
                '--proof', 'tptp', '--saturation_algorithm', args.algorithm,
                '--sine_selection', 'included' if 'included' in mode else 'axioms' if 'sine' in mode else 'off']
     if 'support' in mode or 'filter' in mode or 'soft' in mode or mode == 'weighted':
@@ -158,7 +158,8 @@ def run_case(problem, mode, args, cpu):
                   statuses = re.findall(r'SZS status (\w+)', '\n'.join(texts)),
                   exit_codes = [p.returncode for p in processes],
                   reasons = re.findall(r'Termination reason: ([^\n]+)', '\n'.join(texts)),
-                  proof_logs = [p.name for p in logs if proved(p)])
+                  proof_logs = [p.name for p in logs if proved(p)],
+                  score_errors = re.findall(r'Torok inference failed: ([^\n]+)', '\n'.join(texts)))
     temporary = result_path.with_suffix('.tmp')
     temporary.write_text(json.dumps(result, indent = 2) + '\n')
     temporary.replace(result_path)
@@ -189,6 +190,7 @@ def main():
     parser.add_argument('--probe', type = float, default = 1)
     parser.add_argument('--fraction', type = float, default = 1 / 3)
     parser.add_argument('--max-clauses', type = int, default = 0)
+    parser.add_argument('--memory-mb', type = int, default = 2048)
     parser.add_argument('--algorithm', default = 'otter')
     parser.add_argument('--modes', nargs = '+', default = ['baseline', 'sine', 'resume-support1'])
     parser.add_argument('--extra', nargs = '*', default = [])

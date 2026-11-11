@@ -25,8 +25,9 @@ python Shell/Torok/export.py torok.pt Shell/Torok/torok.ts --connections ../conn
 
 `torok.pt` is the canonical Connections training checkpoint. `Shell/Torok/torok.ts` is its
 exported inference artifact; pass **the exported artifact** to Vampire. The
-exporter copies trained layers into a tensor-only module and supports the Full
-ReLU architecture. It uses TorchScript, a deprecated but available LibTorch
+exporter uses Connections' tensor-only module (`axiom_prediction/torchscript.py`), which
+passes messages in edge chunks so inference fits under `--memory_limit`, and supports
+ReLU models. Re-export `.ts` checkpoints saved before that change. It uses TorchScript, a deprecated but available LibTorch
 loading interface; exporting/loading has been tested with the installed PyTorch
 2.14.1. Prefer Python 3.12/3.13 for export: PyTorch warns about TorchScript under
 Python 3.14. Python is not needed at proof-search runtime.
